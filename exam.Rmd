@@ -1,0 +1,44 @@
+---
+title: "project"
+author: "Nickolas Bax"[]
+date: "July 17, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+gtd = read.csv("globalterrorismdb_0617dist.csv")
+summary(gtd$hostkidoutcome_txt)
+```
+
+There were variables that had a factored value, and a text representation of these. Because of this, there were duplicate variables in the dataset. We chose to drop the text versions of the variables for easy modelling. Other values that were dropped were fields like citations, data source, or text summaries of the attack. These would not be good predictors of the Hostage outcome.
+```{r}
+gdtCleaned = gtd[ , !(names(gtd) %in% c("summary","motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt","dbsource"))]
+gdtCleanedRemoved = gdtCleaned[!is.na(gdtCleaned$hostkidoutcome),]
+summary(gdtCleanedRemoved$hostkidoutcome)
+
+gdtCleanedRemoved$attack1 = 0
+gdtCleanedRemoved$attack2 = 0
+gdtCleanedRemoved$attack3 = 0
+gdtCleanedRemoved$attack4 = 0
+gdtCleanedRemoved$attack5 = 0
+gdtCleanedRemoved$attack6 = 0
+gdtCleanedRemoved$attack7 = 0
+gdtCleanedRemoved$attack8 = 0
+gdtCleanedRemoved$attack9 = 0
+
+for (i in 1:nrow(gdtCleanedRemoved)) {
+  gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype1[i], sep = "")]][i] = 1
+  if (!is.na(gdtCleanedRemoved$attacktype2[i])){
+    gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype2[i], sep = "")]][i] = 1
+  }
+  if (!is.na(gdtCleanedRemoved$attacktype3[i])){
+    gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype3[i], sep = "")]][i] = 1
+  }
+}
+
+
+```
