@@ -192,4 +192,5 @@ summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 
 gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weapdetail"))]
 
 # Could we engineer a feature for the motive field to define "economic", "political", "social"? 
+print("Russellll")
 ```
