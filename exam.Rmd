@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 gtd = read.csv("globalterrorismdb_0617dist.csv")
 summary(gtd$hostkidoutcome_txt)
+library(caret)
 ```
 
 There were variables that had a factored value, and a text representation of these. Because of this, there were duplicate variables in the dataset. We chose to drop the text versions of the variables for easy modelling. Other values that were dropped were fields like citations, data source, or text summaries of the attack. These would not be good predictors of the Hostage outcome.
@@ -19,6 +20,8 @@ There were variables that had a factored value, and a text representation of the
 gdtCleaned = gtd[ , !(names(gtd) %in% c("summary","motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt","dbsource"))]
 gdtCleanedRemoved = gdtCleaned[!is.na(gdtCleaned$hostkidoutcome),]
 summary(gdtCleanedRemoved$hostkidoutcome)
+
+gdtCleanedRemoved = gdtCleanedRemoved[which(gdtCleanedRemoved$iyear > 1997),]
 
 gdtCleanedRemoved$attack1 = 0
 gdtCleanedRemoved$attack2 = 0
@@ -39,6 +42,154 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
     gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype3[i], sep = "")]][i] = 1
   }
 }
+ 
+#Near Zero Variance
+deg = nearZeroVar(gdtCleanedRemoved)
+names(gdtCleanedRemoved)[deg]
 
+# Individual
+summary((factor(gdtCleanedRemoved$individual)))
+#Non-zero variance.  Only 30 observations are marked as (1), meaning they were identified by name and not known to be affiliated with a group.
+#There is also some amount of ambiguity in the coding.  "It is likely that assailants  thought to be characterized as "unaffiliated individuals" are frequently "unidentified""
+#   Will remove
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("individual"))]
 
+# nperps
+# Near-zero variance
+summary(factor(gdtCleanedRemoved$nperps))
+View(gdtCleanedRemoved[which(gdtCleanedRemoved$nperps == -99),])
+# There is a total of 7,809 out of 9911 observations that are missing.  Additionally, there it seems like the data has some outliers (3,200 people!)
+# We may be able to impute the data, but with 79% of the data missing, it may not be a good idea
+#   Will remove
+View(gtd[which(gtd$nperps == 3200),])
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperps"))]
+
+# nperpcap
+# On the Near-zero variance list
+# Also, this seems like it would be information that would be gained after the fact, so it doesn't seem like it would be avaialable to a person on the ground, in the situation
+# Also, this variable would have some dependence on the number of perps that were there in the first place
+#   Will remove
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperpcap"))]
+
+# claimed
+summary(factor(gdtCleanedRemoved$claimed[which(gdtCleanedRemoved$iyear > 1997)]))
+# There are 153 missing values after 1997.
+# This is 2% of the data.  We can either impute the data or treat the unknown as it's own category
+# I choose the latter.
+gdtCleanedRemoved$claimed[which((gdtCleanedRemoved$claimed != 0 & gdtCleanedRemoved$claimed != 1) | is.na(gdtCleanedRemoved$claimed))] = 2
+gdtCleanedRemoved$claimed = factor(gdtCleanedRemoved$claimed)
+summary(gdtCleanedRemoved$claimed)
+# This variable will be susumed by "claimmode"
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimed"))]
+
+# claimmode
+# We may want to consider the application of this one.
+# If we are considering a hostage situation, than we know who did it.
+summary(factor(gdtCleanedRemoved$claimmode[which(gdtCleanedRemoved$iyear > 1997)]))
+summary(factor(gdtCleanedRemoved$claimmode[which(gdtCleanedRemoved$iyear > 1997 & gdtCleanedRemoved$claimed == 1)]))
+# Only available after 1997
+# Even after 1997, we have 80% missing data.  I think we may need to get rid of this variable. 
+# This variable lines pretty clearly up with the number of places that responsibility was claimed for.  I suggest that we use this variable, coding an additional variable, 11, to be understood as "responsibility was not claimed"
+gdtCleanedRemoved$claimmode[is.na(gdtCleanedRemoved$claimmode)] = 11
+gdtCleanedRemoved$claimmode  = factor(gdtCleanedRemoved$claimmode)
+
+# claim2
+summary(factor(gdtCleanedRemoved$claim2))
+# There are only 37 cases of a second group claiming responsibility.
+# This is nearZeroVariance, and not useful
+#NOTE:  It may be good to build a feature if there are multiple groups working together (simple binary flag)
+### Should we keep this?
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim2"))]
+
+# claimmode2
+summary(factor(gdtCleanedRemoved$claimmode2))
+# Altogether there are only 39 cases where this variable has information.  This is not helpful
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode2"))]
+
+# claim3
+summary(factor(gdtCleanedRemoved$claim3))
+# There are only 9 cases of a second group claiming responsibility.
+# This is nearZeroVariance, and not useful
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim3"))]
+
+# claimmode3
+summary(factor(gdtCleanedRemoved$claimmode3))
+# Altogether there are only 9 cases where this variable has information.  This is not helpful
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode3"))]
+
+# compclaim
+summary(factor(gdtCleanedRemoved$compclaim[which(gdtCleanedRemoved$iyear > 1997)]))
+# There are only 19 observations where there were competing claims. An NA or -9 means that there is no indication of competing claims or the question is not applicable.  I feel like this isn't enough variation to make a difference
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("compclaim"))]
+
+# Weapons
+# weaptype1
+summary(factor(gdtCleanedRemoved$weaptype1))
+summary(factor(gdtCleanedRemoved$weaptype2))
+summary(factor(gdtCleanedRemoved$weaptype3))
+summary(factor(gdtCleanedRemoved$weaptype4))
+# In order to collect all possible data, we can either just inclue weaptype1, or we can spread the weapon type like we did with attack type
+gdtCleanedRemoved$weaponType1 = 0
+gdtCleanedRemoved$weaponType2 = 0
+gdtCleanedRemoved$weaponType3 = 0
+gdtCleanedRemoved$weaponType4 = 0
+gdtCleanedRemoved$weaponType5 = 0
+gdtCleanedRemoved$weaponType6 = 0
+gdtCleanedRemoved$weaponType7 = 0
+gdtCleanedRemoved$weaponType8 = 0
+gdtCleanedRemoved$weaponType9 = 0
+gdtCleanedRemoved$weaponType10 = 0
+gdtCleanedRemoved$weaponType11 = 0
+gdtCleanedRemoved$weaponType12 = 0
+gdtCleanedRemoved$weaponType13 = 0
+
+for (i in 1:nrow(gdtCleanedRemoved)) {
+  gdtCleanedRemoved[[paste("weaponType", gdtCleanedRemoved$weaptype1[i], sep = "")]][i] = 1
+  if (!is.na(gdtCleanedRemoved$weaptype2[i])){
+    gdtCleanedRemoved[[paste("weaponType", gdtCleanedRemoved$weaptype2[i], sep = "")]][i] = 1
+  }
+  if (!is.na(gdtCleanedRemoved$weaptype3[i])){
+    gdtCleanedRemoved[[paste("weaponType", gdtCleanedRemoved$weaptype3[i], sep = "")]][i] = 1
+  }
+  if (!is.na(gdtCleanedRemoved$weaptype4[i])){
+    gdtCleanedRemoved[[paste("weaponType", gdtCleanedRemoved$weaptype4[i], sep = "")]][i] = 1
+  }
+}
+# There are no instances of Type 1 (Biological)
+# There are 12 instances of Type 2 (Chemical)
+# There are no instances of Type 3 (Radiological)
+# There are no instances of Type 4 (Nuclear)
+# There are 5220 instances of Type 5 (Firearms)
+# There are 488 instances of Type 6 (Explosive/Bomb/Dynamite)
+# There are 12 instances of Type 7 (Fake Weapons)
+# There are 461 instances of Type 8 (Incendiary)
+# There are 989 instances of Type 9 (Melee)
+# There are 15 instances of Type 10 (Vehicle)
+# There are 5 instances of Type 11 (Sabotage Equipment)
+# There are 52 instances of Type 12 (Other)
+# There are 3848 instances of Type 13 (Unkown)
+
+# I would suggest bucketing the Chemical, Fake Weapons, Vehicle, and Sabotage Equipment as Other
+# We may want to split the Firearm
+summary(factor(gdtCleanedRemoved$weapsubtype1[which(gdtCleanedRemoved$weaptype1 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype2[which(gdtCleanedRemoved$weaptype2 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 == 5)]))
+
+# weaptype2
+
+# weapsubtype2
+
+# weaptype3
+
+# weapsubtype3
+
+# weaptype4
+
+# weapsubtype4
+
+# weapdetail
+#Text field where much of the same information from the weapon type fields.
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weapdetail"))]
+
+# Could we engineer a feature for the motive field to define "economic", "political", "social"? 
 ```
