@@ -33,6 +33,16 @@ gdtCleanedRemoved$attack7 = 0
 gdtCleanedRemoved$attack8 = 0
 gdtCleanedRemoved$attack9 = 0
 
+# 197 samples of attack1 (Assassination) - Degenerative
+# 1779 samples of attack2 (Armed Assault)
+# 245 samples of attack3 (Bombing/Explosion) - Degenerative
+# 173 samples of attack4 (Hijacking) - Degenerative
+# 308 samples of attack5 (Hostage Taking [Barricade Incident]) - Degenerative
+# 7633 samples of attack6 (Hostage Taking ([Kidnapping]) 
+# 454 samples of attack7 (Facility / Infrastructure Attack)
+# 17 samples of attack8 (Unarmed Assualt) - Degenerative
+# 9 samples of attack9 (Unknown) - Degenerative
+
 for (i in 1:nrow(gdtCleanedRemoved)) {
   gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype1[i], sep = "")]][i] = 1
   if (!is.na(gdtCleanedRemoved$attacktype2[i])){
@@ -42,6 +52,7 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
     gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype3[i], sep = "")]][i] = 1
   }
 }
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("attacktype1", "attacktype2", "attacktype3", "attack1", "attack3", "attack4", "attack8", "attack9"))]
  
 #Near Zero Variance
 deg = nearZeroVar(gdtCleanedRemoved)
@@ -80,7 +91,6 @@ gdtCleanedRemoved$claimed[which((gdtCleanedRemoved$claimed != 0 & gdtCleanedRemo
 gdtCleanedRemoved$claimed = factor(gdtCleanedRemoved$claimed)
 summary(gdtCleanedRemoved$claimed)
 # This variable will be susumed by "claimmode"
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimed"))]
 
 # claimmode
 # We may want to consider the application of this one.
@@ -92,6 +102,7 @@ summary(factor(gdtCleanedRemoved$claimmode[which(gdtCleanedRemoved$iyear > 1997 
 # This variable lines pretty clearly up with the number of places that responsibility was claimed for.  I suggest that we use this variable, coding an additional variable, 11, to be understood as "responsibility was not claimed"
 gdtCleanedRemoved$claimmode[is.na(gdtCleanedRemoved$claimmode)] = 11
 gdtCleanedRemoved$claimmode  = factor(gdtCleanedRemoved$claimmode)
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimed"))]
 
 # claim2
 summary(factor(gdtCleanedRemoved$claim2))
@@ -155,6 +166,7 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
     gdtCleanedRemoved[[paste("weaponType", gdtCleanedRemoved$weaptype4[i], sep = "")]][i] = 1
   }
 }
+
 # There are no instances of Type 1 (Biological)
 # There are 12 instances of Type 2 (Chemical)
 # There are no instances of Type 3 (Radiological)
@@ -169,12 +181,17 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
 # There are 52 instances of Type 12 (Other)
 # There are 3848 instances of Type 13 (Unkown)
 
+
 # I would suggest bucketing the Chemical, Fake Weapons, Vehicle, and Sabotage Equipment as Other
 # We may want to split the Firearm
+# But we see that pretty much all the firearms are bucketed as "Unknown Gun Type"
+# So this wouldn't really give any extra information
 summary(factor(gdtCleanedRemoved$weapsubtype1[which(gdtCleanedRemoved$weaptype1 == 5)]))
 summary(factor(gdtCleanedRemoved$weapsubtype2[which(gdtCleanedRemoved$weaptype2 == 5)]))
 summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype4 == 5)]))
 
+gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weaptyp1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weapontype7", "weapontype10", "weaponType11", "weaponType12"))]
 # weaptype2
 
 # weapsubtype2
@@ -192,5 +209,4 @@ summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 
 gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weapdetail"))]
 
 # Could we engineer a feature for the motive field to define "economic", "political", "social"? 
-print("Russellll")
 ```
