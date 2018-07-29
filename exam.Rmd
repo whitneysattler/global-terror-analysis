@@ -20,6 +20,10 @@ There were variables that had a factored value, and a text representation of the
 gdtCleaned = gtd[ , !(names(gtd) %in% c("summary","motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt","dbsource"))]
 gdtCleanedRemoved = gdtCleaned[!is.na(gdtCleaned$hostkidoutcome),]
 summary(gdtCleanedRemoved$hostkidoutcome)
+```
+
+```{r}
+# Whitney's Code
 
 gdtCleanedRemoved = gdtCleanedRemoved[which(gdtCleanedRemoved$iyear > 1997),]
 
@@ -58,7 +62,7 @@ gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("atta
 deg = nearZeroVar(gdtCleanedRemoved)
 names(gdtCleanedRemoved)[deg]
 
-# individual
+# Individual
 summary((factor(gdtCleanedRemoved$individual)))
 #Non-zero variance.  Only 30 observations are marked as (1), meaning they were identified by name and not known to be affiliated with a group.
 #There is also some amount of ambiguity in the coding.  "It is likely that assailants  thought to be characterized as "unaffiliated individuals" are frequently "unidentified""
@@ -134,7 +138,7 @@ summary(factor(gdtCleanedRemoved$compclaim[which(gdtCleanedRemoved$iyear > 1997)
 gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("compclaim"))]
 
 # Weapons
-# weaptype1, weapsubtype1, weaptype2, weapsubtype2, weaptype3, weapsubtype4, weaptype4, weapsubtype4
+# weaptype1
 summary(factor(gdtCleanedRemoved$weaptype1))
 summary(factor(gdtCleanedRemoved$weaptype2))
 summary(factor(gdtCleanedRemoved$weaptype3))
@@ -181,11 +185,28 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
 # There are 52 instances of Type 12 (Other)
 # There are 3848 instances of Type 13 (Unkown)
 
+
 # I would suggest bucketing the Chemical, Fake Weapons, Vehicle, and Sabotage Equipment as Other
 # We may want to split the Firearm
 # But we see that pretty much all the firearms are bucketed as "Unknown Gun Type"
 # So this wouldn't really give any extra information
+summary(factor(gdtCleanedRemoved$weapsubtype1[which(gdtCleanedRemoved$weaptype1 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype2[which(gdtCleanedRemoved$weaptype2 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 == 5)]))
+summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype4 == 5)]))
+
 gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weaptyp1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weapontype7", "weapontype10", "weaponType11", "weaponType12"))]
+# weaptype2
+
+# weapsubtype2
+
+# weaptype3
+
+# weapsubtype3
+
+# weaptype4
+
+# weapsubtype4
 
 # weapdetail
 #Text field where much of the same information from the weapon type fields.
@@ -195,6 +216,9 @@ gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weap
 ```
 
 ```{r}
+#-------------------------------------------------------------------------------
+# Group Code, addressing variables unassigned to gropu members
+
 # eventid
 # Removing the variable ID, as it does not provide any useful information
 gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("eventid"))]
@@ -205,7 +229,9 @@ gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("iyea
 
 # imonth
 # We wanted the months to be cyclical, showing that month 12, was related closer to month 1 than it was to month 6.  Therefore, we decided to bin the months by season rather than by actual month.  It is important to point out though, that seasons in the north and south hemisphere are split.  So we took this into account as we performed our feature creation
+
 # However, there were some missing lattitude data first, so we had to impute that first
+
 # In order to imput the Latitutde data, we took the mean of the latitude for all other terrorist activities that occured in the same country as the event in question
 
 naLat = which(is.na(gdtCleanedRemoved$latitude))
@@ -257,5 +283,91 @@ gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("long
 # This helps to decode the latitude and longitude and the certainty on those numbers.  I predict that if we see geographical terms, they will probably be rather broad, so this level of precision is probably not neccesary
 gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("specificity"))]
 
+# Vicinity
+# This really seems to be a measure if this was a rural or urban attack
+summary(factor(gdtCleanedRemoved$vicinity))
+View(gdtCleanedRemoved[which(gdtCleanedRemoved$vicinity == -9),])
+# There are two observations that can have vicnity imputed based on other data
+gdtCleanedRemoved[which(gdtCleanedRemoved$vicinity == -9),]$vicinity = c(1, -9, 1, -9, -9)
+# The since we don't have a way to impute the vicinity variable for the remaining three, we will leave these as -9.
 
+#crit1, crit2, crit3
+summary(factor(gdtCleanedRemoved$crit1))
+summary(factor(gdtCleanedRemoved$crit2))
+summary(factor(gdtCleanedRemoved$crit3))
+# We will keep these variables thought they are slightly degenerate.  Most of the events have all indicators of terrorism.  There are no missing values
+
+# doubtter
+summary(factor(gdtCleanedRemoved$doubtterr))
+# Signals whether there is doubt if the incident was terrorism. No missing values. This will be helpful
+
+#alternative
+summary(factor(gdtCleanedRemoved$alternative))
+# For all the data where there is no doubt about terrorism, there is an NA value.  For every other, there is another alternative.  We will change the NA's to be an alternative category where we have no alternative (type 6)
+gdtCleanedRemoved$alternative[which(is.na(gdtCleanedRemoved$alternative))] = 6
+
+# int_LOG, INT_IDEO, INT_MISC, INT_ANY
+summary(factor(gdtCleanedRemoved$INT_LOG))
+summary(factor(gdtCleanedRemoved$INT_IDEO))
+# The first two variables have a lot of unknowns, but we feel that the unknowns themselves may represent another category, so we decided to recode these two variables with an alternative missing category.
+summary(factor(gdtCleanedRemoved$INT_MISC))
+# This variable represents whether the target was not a citizen of the country they were attacked in.  There are 9 missing variables, so we will just set these variables equal to NA
+gdtCleanedRemoved$INT_MISC[which(gdtCleanedRemoved$INT_MISC == -9)] = NA
+
+# nReleased
+# This is keeping track of the number of victims that were released.  This variable seems to be directly predicting the response variable we are trying to predict, so we dropped it.
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nreleased"))]
+
+# nHours, nDays
+# We decided to measure the length of all events in hours.  Therefore, we transform and elminiate the nDays variable
+View(gdtCleanedRemoved[, names(gdtCleanedRemoved) %in% c("nhours", "ndays")])
+gdtCleanedRemoved$nhours[which(gdtCleanedRemoved$ndays > 0)] = gdtCleanedRemoved$ndays[which(gdtCleanedRemoved$ndays > 0)] * 24
+# Then, we know that there are many observations where there is not time at all.  These are represented with values like -9 and -99.  We change these values to NA, so that R will pick them up.
+gdtCleanedRemoved$nhours[which(gdtCleanedRemoved$nhours < 0)] = NA
+
+# success
+summary(factor(gdtCleanedRemoved$success))
+# We can't really know if the terrorist action is a success until after it's done.  Also, there are 31 instances of it not being a success, so it is a degenerate variable
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("success"))]
+
+# suicide
+summary(factor(gdtCleanedRemoved$suicide))
+# This is another factor that we would only know after it happened.  It doesn't really lend itself to operational use.  Additionally, there are only 91 instances in our filtered data set where the terrorist commited suicide.  Therefore, we will omit this variable as it is degenerative.
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("suicide"))]
+
+# gname, gname2, gname3, gsubname, gsubname2, gsubname3
+summary(factor(gdtCleanedRemoved$gname))
+# We are going to keep the first version of gname, though that alone has many instances of unknown attackers, along with many groups responsible for only a small number of attacks.
+# The other instances are even less helpful in the large variance of the data.
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("gsubname", "gname2", "gsubname2", "gname3", "gsubname3"))]
+
+# Divert
+summary(factor(gdtCleanedRemoved$divert))
+# This variable is degenerative. 8,123 cases are unknown
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("divert"))]
+
+# multiple
+summary(factor(gdtCleanedRemoved$multiple))
+# There is roughly 10% of cases that were not independent incidents. This seems like there this may be an informative variable.
+```
+
+```{r}
+# Russell's Code
+
+#Remove Russell's unused variables
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("targsubtype1", "corp1", "target1", "targtype2", "targsubtype2", "corp2", "target2", "natlty2", "targtype3", "targsubtype3", "corp3", "target3", "natlty3", "natlty3_txt", "guncertain2", "guncertain3"))]
+
+#Nationalaity Type converted from country to region. Keeping 999 for unknown nationality region
+library(sqldf)
+regions = sqldf("select distinct country, region from gdtCleanedRemoved")
+gdtCleanedRemoved = sqldf("select a.*,
+                            case
+                              when a.natlty1 = 999 then 999
+                              else b.region 
+                            end as natltyregion
+                          from gdtCleanedRemoved as a
+                          left join regions as b
+                            on a.natlty1 = b.country")
+
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("natlty1"))]
 ```
