@@ -52,18 +52,18 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
     gdtCleanedRemoved[[paste("attack", gdtCleanedRemoved$attacktype3[i], sep = "")]][i] = 1
   }
 }
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("attacktype1", "attacktype2", "attacktype3", "attack1", "attack3", "attack4", "attack8", "attack9"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("attacktype1", "attacktype2", "attacktype3", "attack1", "attack3", "attack4", "attack8", "attack9"))]
  
 #Near Zero Variance
 deg = nearZeroVar(gdtCleanedRemoved)
 names(gdtCleanedRemoved)[deg]
 
-# Individual
+# individual
 summary((factor(gdtCleanedRemoved$individual)))
 #Non-zero variance.  Only 30 observations are marked as (1), meaning they were identified by name and not known to be affiliated with a group.
 #There is also some amount of ambiguity in the coding.  "It is likely that assailants  thought to be characterized as "unaffiliated individuals" are frequently "unidentified""
 #   Will remove
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("individual"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("individual"))]
 
 # nperps
 # Near-zero variance
@@ -73,14 +73,14 @@ View(gdtCleanedRemoved[which(gdtCleanedRemoved$nperps == -99),])
 # We may be able to impute the data, but with 79% of the data missing, it may not be a good idea
 #   Will remove
 View(gtd[which(gtd$nperps == 3200),])
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperps"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperps"))]
 
 # nperpcap
 # On the Near-zero variance list
 # Also, this seems like it would be information that would be gained after the fact, so it doesn't seem like it would be avaialable to a person on the ground, in the situation
 # Also, this variable would have some dependence on the number of perps that were there in the first place
 #   Will remove
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperpcap"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("nperpcap"))]
 
 # claimed
 summary(factor(gdtCleanedRemoved$claimed[which(gdtCleanedRemoved$iyear > 1997)]))
@@ -102,7 +102,7 @@ summary(factor(gdtCleanedRemoved$claimmode[which(gdtCleanedRemoved$iyear > 1997 
 # This variable lines pretty clearly up with the number of places that responsibility was claimed for.  I suggest that we use this variable, coding an additional variable, 11, to be understood as "responsibility was not claimed"
 gdtCleanedRemoved$claimmode[is.na(gdtCleanedRemoved$claimmode)] = 11
 gdtCleanedRemoved$claimmode  = factor(gdtCleanedRemoved$claimmode)
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimed"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimed"))]
 
 # claim2
 summary(factor(gdtCleanedRemoved$claim2))
@@ -110,31 +110,31 @@ summary(factor(gdtCleanedRemoved$claim2))
 # This is nearZeroVariance, and not useful
 #NOTE:  It may be good to build a feature if there are multiple groups working together (simple binary flag)
 ### Should we keep this?
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim2"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim2"))]
 
 # claimmode2
 summary(factor(gdtCleanedRemoved$claimmode2))
 # Altogether there are only 39 cases where this variable has information.  This is not helpful
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode2"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode2"))]
 
 # claim3
 summary(factor(gdtCleanedRemoved$claim3))
 # There are only 9 cases of a second group claiming responsibility.
 # This is nearZeroVariance, and not useful
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim3"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claim3"))]
 
 # claimmode3
 summary(factor(gdtCleanedRemoved$claimmode3))
 # Altogether there are only 9 cases where this variable has information.  This is not helpful
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode3"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("claimmode3"))]
 
 # compclaim
 summary(factor(gdtCleanedRemoved$compclaim[which(gdtCleanedRemoved$iyear > 1997)]))
 # There are only 19 observations where there were competing claims. An NA or -9 means that there is no indication of competing claims or the question is not applicable.  I feel like this isn't enough variation to make a difference
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("compclaim"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("compclaim"))]
 
 # Weapons
-# weaptype1
+# weaptype1, weapsubtype1, weaptype2, weapsubtype2, weaptype3, weapsubtype4, weaptype4, weapsubtype4
 summary(factor(gdtCleanedRemoved$weaptype1))
 summary(factor(gdtCleanedRemoved$weaptype2))
 summary(factor(gdtCleanedRemoved$weaptype3))
@@ -181,32 +181,81 @@ for (i in 1:nrow(gdtCleanedRemoved)) {
 # There are 52 instances of Type 12 (Other)
 # There are 3848 instances of Type 13 (Unkown)
 
-
 # I would suggest bucketing the Chemical, Fake Weapons, Vehicle, and Sabotage Equipment as Other
 # We may want to split the Firearm
 # But we see that pretty much all the firearms are bucketed as "Unknown Gun Type"
 # So this wouldn't really give any extra information
-summary(factor(gdtCleanedRemoved$weapsubtype1[which(gdtCleanedRemoved$weaptype1 == 5)]))
-summary(factor(gdtCleanedRemoved$weapsubtype2[which(gdtCleanedRemoved$weaptype2 == 5)]))
-summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype3 == 5)]))
-summary(factor(gdtCleanedRemoved$weapsubtype3[which(gdtCleanedRemoved$weaptype4 == 5)]))
-
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weaptyp1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weapontype7", "weapontype10", "weaponType11", "weaponType12"))]
-# weaptype2
-
-# weapsubtype2
-
-# weaptype3
-
-# weapsubtype3
-
-# weaptype4
-
-# weapsubtype4
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weaptyp1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weapontype7", "weapontype10", "weaponType11", "weaponType12"))]
 
 # weapdetail
 #Text field where much of the same information from the weapon type fields.
-gdtCleanedRemoved = gtdCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weapdetail"))]
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("weapdetail"))]
 
 # Could we engineer a feature for the motive field to define "economic", "political", "social"? 
+```
+
+```{r}
+# eventid
+# Removing the variable ID, as it does not provide any useful information
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("eventid"))]
+
+# iyear
+# Removing the iyear variable, as we do not waht this to be driven by trends up to this point.  Additionally, we don't feel like using this variable makes sense in the business-sense.
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("iyear"))]
+
+# imonth
+# We wanted the months to be cyclical, showing that month 12, was related closer to month 1 than it was to month 6.  Therefore, we decided to bin the months by season rather than by actual month.  It is important to point out though, that seasons in the north and south hemisphere are split.  So we took this into account as we performed our feature creation
+# However, there were some missing lattitude data first, so we had to impute that first
+# In order to imput the Latitutde data, we took the mean of the latitude for all other terrorist activities that occured in the same country as the event in question
+
+naLat = which(is.na(gdtCleanedRemoved$latitude))
+imputeLat = function (c) {
+  return (mean(na.omit(gtd$latitude[which(gtd$country == c)])))
+}
+gdtCleanedRemoved$latitude[naLat] = mapply(imputeLat, gdtCleanedRemoved$country[naLat])
+
+#Summer = 0
+#Fall = 1
+#Winter = 2
+#Spring = 3
+gdtCleanedRemoved$season = ifelse(gdtCleanedRemoved$imonth %in% c(6, 7, 8), 0, ifelse(gdtCleanedRemoved$imonth %in% c(9, 10, 11), 1, ifelse(gdtCleanedRemoved$imonth %in% c(12, 1, 2), 2, 3)))
+gdtCleanedRemoved$season[which(gdtCleanedRemoved$latitude < 0)] = (gdtCleanedRemoved$season[which(gdtCleanedRemoved$latitude < 0)] + 2) %% 4
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("imonth"))]
+
+# iday
+# We may want to use this, but there are 80 observations with 0 marked as the day.  By looking at the "relative date" we were able to manually identify the date for some of these. When there was a range of dates provide, the first date was used. For those that were not able to be identified, 15 was used as the middle of the month
+gdtCleanedRemoved[which(gdtCleanedRemoved$iday == 0),]$iday =  c(15,15,1,16,21,15,27,15,26,7,2,15,7,12,3,29,28,23,31,31,31,31,24,15,15,15,15,15,15,29,11,15,15,1,10,11,13,27,23,15,24,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,23,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,1,3,23,01,07)
+
+# approxdate
+# This is an unstructured date block.  We took all the needed infromation when imputing the iday variable
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("approxdate"))]
+
+#extended
+# Those this information is helpful, it is already captured in the duration of time that the event took place.  We want to avoid colinearity if possible
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("extended"))]
+
+# resolution
+# This information wouldn't be available to someone currently in the field, dealing with this kind of situation
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("resolution"))]
+
+# Country, Region
+# These two are thought to be very important and do not have any missing data.  We will keep these.
+
+# provstate, city
+# There are so many different cities that the actual cities and states as variables would not be useful. Additionally, more than half of our data are in an unidentified city.  The proportion for region is not nearly as high, at about 30%.
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("provstate", "city"))]
+
+# Latitude
+# We really want to use latitude as a measure from the equator. Therefore, we are going to take the absolute value of the latitude variable
+gdtCleanedRemoved$latitude = abs(gdtCleanedRemoved$latitude)
+
+# longitude
+# We decided to not include this, as Sweeden is very different from the Libya, in everything from culture, climate, and language.  While we were able to find some research documenting trends based on latitude, no such research was found for longitude
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("longitude"))]
+
+# Specificity
+# This helps to decode the latitude and longitude and the certainty on those numbers.  I predict that if we see geographical terms, they will probably be rather broad, so this level of precision is probably not neccesary
+gdtCleanedRemoved = gdtCleanedRemoved[ , !(names(gdtCleanedRemoved) %in% c("specificity"))]
+
+
 ```
