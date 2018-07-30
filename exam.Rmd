@@ -16,14 +16,38 @@ library(caret)
 
 There were variables that had a factored value, and a text representation of these. Because of this, there were duplicate variables in the dataset. We chose to drop the text versions of the variables for easy modelling. Other values that were dropped were fields like citations, data source, or text summaries of the attack. These would not be good predictors of the Hostage outcome.
 ```{r}
+#Nick's Code
 #The _txt variables are the expanded text version of their factor counterpart. Leaving _txt variables would leave two variables with the same data. 
 gtdCleaned = gtd[ , !(names(gtd) %in% c("propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt"))]
 
 #Remove text entries, citations, and database sources these are not predictive. The related field does not provide the right context required for predictive power in the models we will be using.
-gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("summary","motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","dbsource"))]
+gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","dbsource"))]
 
-#Remove all entries where there is no hostage outcome. If there's no hostage outcome, we can't predict the hostage outcome.
-gtdCleanedRemoved = gtdCleaned[!is.na(gtdCleaned$hostkidoutcome),]
+gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("nkill", "nkillus", "nkillter", "nwound", "nwoundus","nwoundte","ransompaidus","ransomamtus"))]
+
+#Very large portions of the data missing for the following variables. >80% each
+gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("propvalue","propextent"))]
+
+#Remove all entries where there is no hostage outcome. If there's no hostage outcome, we have nothing to predict.
+gtdCleaned = gtdCleaned[gtdCleaned$ishostkid == 1, ]
+gtdCleanedRemoved = gtdCleaned[!is.na(gtdCleaned$ishostkid),]
+#Now that the dataset has selected only hostage observations, remove it; this value will always be 1.
+gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("ishostkid"))]
+
+#Remove observations where there is missing data for the hostage outcome
+gtdCleanedRemoved = gtdCleanedRemoved[!is.na(gtdCleanedRemoved$hostkidoutcome),]
+
+
+#nhostkid has 1 NA value. remove it.
+gtdCleanedRemoved = gtdCleanedRemoved[!is.na(gtdCleanedRemoved$nhostkid),]
+
+#the 'Ransom' variable is whether or not a ransom has been demanded. In the case of missing data, we're technically unaware of a ransom being delievered. This could be treated the same as not recieveing a ransom demand in our model. set NA and -9 to 0. Once done, convert it to a factor
+gtdCleanedRemoved$ransom[is.na(gtdCleanedRemoved$ransom)] = 0
+gtdCleanedRemoved$ransom[gtdCleanedRemoved$ransom==-9]=0
+
+#Convert factor variables into factors
+gtdCleanedRemoved$ransom = as.factor(gtdCleanedRemoved$ransom)
+gtdCleanedRemoved$property = as.factor(gtdCleanedRemoved$property)
 ```
 
 ```{r}
