@@ -1,6 +1,6 @@
 ---
 title: "project"
-author: "Nickolas Bax"[]
+author: "Nickolas Bax, Russell Herzog, Whitney Sattler""
 date: "July 17, 2018"
 output: word_document
 ---
@@ -18,7 +18,7 @@ There were variables that had a factored value, and a text representation of the
 ```{r}
 #Nick's Code
 #The _txt variables are the expanded text version of their factor counterpart. Leaving _txt variables would leave two variables with the same data. 
-gtdCleaned = gtd[ , !(names(gtd) %in% c("propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt"))]
+gtdCleaned = gtd[ , !(names(gtd) %in% c("propextent_txt","weapsubtype1_txt","weapsubtype2_txt","weapsubtype3_txt","weapsubtype4_txt","weaptype1_txt","weaptype2_txt","weaptype3_txt","weaptype4_txt","alternative_txt","country_txt","region_txt","attacktype1_txt","attacktype2_txt","attacktype3_txt","targsubtype1_txt","targsubtype3_txt","targtype3_txt","natlty1_txt","natlty2_txt","targtype1_txt","targtype2_txt","targsubtype2_txt","claimmode_txt","claimmode2_txt","claimmode3_txt","hostkidoutcome_txt", "nhostkidus"))]
 
 #Remove text entries, citations, and database sources these are not predictive. The related field does not provide the right context required for predictive power in the models we will be using.
 gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("summary","motive","propcomment","location","ransomnote","addnotes","scite1","scite2","scite3","related","dbsource"))]
@@ -32,8 +32,7 @@ gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("propvalue","propextent"))
 gtdCleaned = gtdCleaned[gtdCleaned$ishostkid == 1, ]
 gtdCleanedRemoved = gtdCleaned[!is.na(gtdCleaned$ishostkid),]
 #Now that the dataset has selected only hostage observations, remove it; this value will always be 1.
-gtdCleaned = gtdCleaned[ , !(names(gtdCleaned) %in% c("ishostkid"))]
-
+gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("ishostkid"))]
 #Remove observations where there is missing data for the hostage outcome
 gtdCleanedRemoved = gtdCleanedRemoved[!is.na(gtdCleanedRemoved$hostkidoutcome),]
 
@@ -88,10 +87,10 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("atta
  
 #Near Zero Variance
 deg = nearZeroVar(gtdCleanedRemoved)
-names(gtdCleanedRemoved)[deg]
+#names(gtdCleanedRemoved)[deg]
 
 # Individual
-summary((factor(gtdCleanedRemoved$individual)))
+#summary((factor(gtdCleanedRemoved$individual)))
 #Non-zero variance.  Only 30 observations are marked as (1), meaning they were identified by name and not known to be affiliated with a group.
 #There is also some amount of ambiguity in the coding.  "It is likely that assailants  thought to be characterized as "unaffiliated individuals" are frequently "unidentified""
 #   Will remove
@@ -99,12 +98,12 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("indi
 
 # nperps
 # Near-zero variance
-summary(factor(gtdCleanedRemoved$nperps))
-View(gtdCleanedRemoved[which(gtdCleanedRemoved$nperps == -99),])
+#summary(factor(gtdCleanedRemoved$nperps))
+#View(gtdCleanedRemoved[which(gtdCleanedRemoved$nperps == -99),])
 # There is a total of 7,809 out of 9911 observations that are missing.  Additionally, there it seems like the data has some outliers (3,200 people!)
 # We may be able to impute the data, but with 79% of the data missing, it may not be a good idea
 #   Will remove
-View(gtd[which(gtd$nperps == 3200),])
+#View(gtd[which(gtd$nperps == 3200),])
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("nperps"))]
 
 # nperpcap
@@ -115,20 +114,20 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("nper
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("nperpcap"))]
 
 # claimed
-summary(factor(gtdCleanedRemoved$claimed[which(gtdCleanedRemoved$iyear > 1997)]))
+#summary(factor(gtdCleanedRemoved$claimed[which(gtdCleanedRemoved$iyear > 1997)]))
 # There are 153 missing values after 1997.
 # This is 2% of the data.  We can either impute the data or treat the unknown as it's own category
 # I choose the latter.
 gtdCleanedRemoved$claimed[which((gtdCleanedRemoved$claimed != 0 & gtdCleanedRemoved$claimed != 1) | is.na(gtdCleanedRemoved$claimed))] = 2
 gtdCleanedRemoved$claimed = factor(gtdCleanedRemoved$claimed)
-summary(gtdCleanedRemoved$claimed)
+#summary(gtdCleanedRemoved$claimed)
 # This variable will be susumed by "claimmode"
 
 # claimmode
 # We may want to consider the application of this one.
 # If we are considering a hostage situation, than we know who did it.
-summary(factor(gtdCleanedRemoved$claimmode[which(gtdCleanedRemoved$iyear > 1997)]))
-summary(factor(gtdCleanedRemoved$claimmode[which(gtdCleanedRemoved$iyear > 1997 & gtdCleanedRemoved$claimed == 1)]))
+#summary(factor(gtdCleanedRemoved$claimmode[which(gtdCleanedRemoved$iyear > 1997)]))
+#summary(factor(gtdCleanedRemoved$claimmode[which(gtdCleanedRemoved$iyear > 1997 & gtdCleanedRemoved$claimed == 1)]))
 # Only available after 1997
 # Even after 1997, we have 80% missing data.  I think we may need to get rid of this variable. 
 # This variable lines pretty clearly up with the number of places that responsibility was claimed for.  I suggest that we use this variable, coding an additional variable, 11, to be understood as "responsibility was not claimed"
@@ -137,7 +136,7 @@ gtdCleanedRemoved$claimmode  = factor(gtdCleanedRemoved$claimmode)
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("claimed"))]
 
 # claim2
-summary(factor(gtdCleanedRemoved$claim2))
+#summary(factor(gtdCleanedRemoved$claim2))
 # There are only 37 cases of a second group claiming responsibility.
 # This is nearZeroVariance, and not useful
 #NOTE:  It may be good to build a feature if there are multiple groups working together (simple binary flag)
@@ -145,32 +144,32 @@ summary(factor(gtdCleanedRemoved$claim2))
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("claim2"))]
 
 # claimmode2
-summary(factor(gtdCleanedRemoved$claimmode2))
+#summary(factor(gtdCleanedRemoved$claimmode2))
 # Altogether there are only 39 cases where this variable has information.  This is not helpful
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("claimmode2"))]
 
 # claim3
-summary(factor(gtdCleanedRemoved$claim3))
+#summary(factor(gtdCleanedRemoved$claim3))
 # There are only 9 cases of a second group claiming responsibility.
 # This is nearZeroVariance, and not useful
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("claim3"))]
 
 # claimmode3
-summary(factor(gtdCleanedRemoved$claimmode3))
+#summary(factor(gtdCleanedRemoved$claimmode3))
 # Altogether there are only 9 cases where this variable has information.  This is not helpful
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("claimmode3"))]
 
 # compclaim
-summary(factor(gtdCleanedRemoved$compclaim[which(gtdCleanedRemoved$iyear > 1997)]))
+#summary(factor(gtdCleanedRemoved$compclaim[which(gtdCleanedRemoved$iyear > 1997)]))
 # There are only 19 observations where there were competing claims. An NA or -9 means that there is no indication of competing claims or the question is not applicable.  I feel like this isn't enough variation to make a difference
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("compclaim"))]
 
 # Weapons
 # weaptype1
-summary(factor(gtdCleanedRemoved$weaptype1))
-summary(factor(gtdCleanedRemoved$weaptype2))
-summary(factor(gtdCleanedRemoved$weaptype3))
-summary(factor(gtdCleanedRemoved$weaptype4))
+#summary(factor(gtdCleanedRemoved$weaptype1))
+#summary(factor(gtdCleanedRemoved$weaptype2))
+#summary(factor(gtdCleanedRemoved$weaptype3))
+#summary(factor(gtdCleanedRemoved$weaptype4))
 # In order to collect all possible data, we can either just inclue weaptype1, or we can spread the weapon type like we did with attack type
 gtdCleanedRemoved$weaponType1 = 0
 gtdCleanedRemoved$weaponType2 = 0
@@ -218,12 +217,12 @@ for (i in 1:nrow(gtdCleanedRemoved)) {
 # We may want to split the Firearm
 # But we see that pretty much all the firearms are bucketed as "Unknown Gun Type"
 # So this wouldn't really give any extra information
-summary(factor(gtdCleanedRemoved$weapsubtype1[which(gtdCleanedRemoved$weaptype1 == 5)]))
-summary(factor(gtdCleanedRemoved$weapsubtype2[which(gtdCleanedRemoved$weaptype2 == 5)]))
-summary(factor(gtdCleanedRemoved$weapsubtype3[which(gtdCleanedRemoved$weaptype3 == 5)]))
-summary(factor(gtdCleanedRemoved$weapsubtype3[which(gtdCleanedRemoved$weaptype4 == 5)]))
+#summary(factor(gtdCleanedRemoved$weapsubtype1[which(gtdCleanedRemoved$weaptype1 == 5)]))
+#summary(factor(gtdCleanedRemoved$weapsubtype2[which(gtdCleanedRemoved$weaptype2 == 5)]))
+#summary(factor(gtdCleanedRemoved$weapsubtype3[which(gtdCleanedRemoved$weaptype3 == 5)]))
+#summary(factor(gtdCleanedRemoved$weapsubtype3[which(gtdCleanedRemoved$weaptype4 == 5)]))
 
-gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("weaptyp1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weapontype7", "weapontype10", "weaponType11", "weaponType12"))]
+gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("weaptype1", "weaptype2", "weaptype3", "weaptype4", "weapsubtype1", "weapsubtype2", "weapsubtype3", "weapsubtype4", "weaponType1", "weaponType2", "weaponType3", "weaponType4", "weaponType7", "weaponType10", "weaponType11", "weaponType12"))]
 # weaptype2
 
 # weapsubtype2
@@ -313,34 +312,36 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("spec
 
 # Vicinity
 # This really seems to be a measure if this was a rural or urban attack
-summary(factor(gtdCleanedRemoved$vicinity))
-View(gtdCleanedRemoved[which(gtdCleanedRemoved$vicinity == -9),])
+#summary(factor(gtdCleanedRemoved$vicinity))
+#View(gtdCleanedRemoved[which(gtdCleanedRemoved$vicinity == -9),])
 # There are two observations that can have vicnity imputed based on other data
 gtdCleanedRemoved[which(gtdCleanedRemoved$vicinity == -9),]$vicinity = c(1, -9, 1, -9, -9)
 # The since we don't have a way to impute the vicinity variable for the remaining three, we will leave these as -9.
 
 #crit1, crit2, crit3
-summary(factor(gtdCleanedRemoved$crit1))
-summary(factor(gtdCleanedRemoved$crit2))
-summary(factor(gtdCleanedRemoved$crit3))
+#summary(factor(gtdCleanedRemoved$crit1))
+#summary(factor(gtdCleanedRemoved$crit2))
+#summary(factor(gtdCleanedRemoved$crit3))
 # We will keep these variables thought they are slightly degenerate.  Most of the events have all indicators of terrorism.  There are no missing values
 
 # doubtter
-summary(factor(gtdCleanedRemoved$doubtterr))
+#summary(factor(gtdCleanedRemoved$doubtterr))
 # Signals whether there is doubt if the incident was terrorism. No missing values. This will be helpful
+gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("doubtterr"))]
 
 #alternative
-summary(factor(gtdCleanedRemoved$alternative))
+#summary(factor(gtdCleanedRemoved$alternative))
 # For all the data where there is no doubt about terrorism, there is an NA value.  For every other, there is another alternative.  We will change the NA's to be an alternative category where we have no alternative (type 6)
 gtdCleanedRemoved$alternative[which(is.na(gtdCleanedRemoved$alternative))] = 6
 
 # int_LOG, INT_IDEO, INT_MISC, INT_ANY
-summary(factor(gtdCleanedRemoved$INT_LOG))
-summary(factor(gtdCleanedRemoved$INT_IDEO))
+#summary(factor(gtdCleanedRemoved$INT_LOG))
+#summary(factor(gtdCleanedRemoved$INT_IDEO))
 # The first two variables have a lot of unknowns, but we feel that the unknowns themselves may represent another category, so we decided to recode these two variables with an alternative missing category.
-summary(factor(gtdCleanedRemoved$INT_MISC))
+#summary(factor(gtdCleanedRemoved$INT_MISC))
 # This variable represents whether the target was not a citizen of the country they were attacked in.  There are 9 missing variables, so we will just set these variables equal to NA
 gtdCleanedRemoved$INT_MISC[which(gtdCleanedRemoved$INT_MISC == -9)] = NA
+gtdCleanedRemoved = gtdCleanedRemoved[, !(names(gtdCleanedRemoved) %in% c("INT_ANY"))]
 
 # nReleased
 # This is keeping track of the number of victims that were released.  This variable seems to be directly predicting the response variable we are trying to predict, so we dropped it.
@@ -348,35 +349,39 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("nrel
 
 # nHours, nDays
 # We decided to measure the length of all events in hours.  Therefore, we transform and elminiate the nDays variable
-View(gtdCleanedRemoved[, names(gtdCleanedRemoved) %in% c("nhours", "ndays")])
+#View(gtdCleanedRemoved[, names(gtdCleanedRemoved) %in% c("nhours", "ndays")])
 gtdCleanedRemoved$nhours[which(gtdCleanedRemoved$ndays > 0)] = gtdCleanedRemoved$ndays[which(gtdCleanedRemoved$ndays > 0)] * 24
 # Then, we know that there are many observations where there is not time at all.  These are represented with values like -9 and -99.  We change these values to NA, so that R will pick them up.
 gtdCleanedRemoved$nhours[which(gtdCleanedRemoved$nhours < 0)] = NA
+gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("ndays"))]
 
 # success
-summary(factor(gtdCleanedRemoved$success))
+#summary(factor(gtdCleanedRemoved$success))
 # We can't really know if the terrorist action is a success until after it's done.  Also, there are 31 instances of it not being a success, so it is a degenerate variable
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("success"))]
 
 # suicide
-summary(factor(gtdCleanedRemoved$suicide))
+#summary(factor(gtdCleanedRemoved$suicide))
 # This is another factor that we would only know after it happened.  It doesn't really lend itself to operational use.  Additionally, there are only 91 instances in our filtered data set where the terrorist commited suicide.  Therefore, we will omit this variable as it is degenerative.
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("suicide"))]
 
 # gname, gname2, gname3, gsubname, gsubname2, gsubname3
-summary(factor(gtdCleanedRemoved$gname))
+#summary(factor(gtdCleanedRemoved$gname))
 # We are going to keep the first version of gname, though that alone has many instances of unknown attackers, along with many groups responsible for only a small number of attacks.
 # The other instances are even less helpful in the large variance of the data.
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("gsubname", "gname2", "gsubname2", "gname3", "gsubname3"))]
 
 # Divert
-summary(factor(gtdCleanedRemoved$divert))
+#summary(factor(gtdCleanedRemoved$divert))
 # This variable is degenerative. 8,123 cases are unknown
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("divert"))]
 
 # multiple
-summary(factor(gtdCleanedRemoved$multiple))
+#summary(factor(gtdCleanedRemoved$multiple))
 # There is roughly 10% of cases that were not independent incidents. This seems like there this may be an informative variable.
+
+# percPaid
+gtdCleanedRemoved$percPaid = gtdCleanedRemoved$ransompaid / gtdCleanedRemoved$ransomamt
 ```
 
 ```{r}
@@ -398,4 +403,12 @@ gtdCleanedRemoved = sqldf("select a.*,
                             on a.natlty1 = b.country")
 
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("natlty1"))]
+```
+
+```{r}
+# Ensuring variables are factorized
+sapply(gtdCleanedRemoved, class)
+gtdCleanedRemoved$iday = factor(gtdCleanedRemoved$iday, levels = (1:31), ordered = TRUE)
+factorize = c("crit1", "crit2", "crit3", "country", "region", "vicinity", "alternative", "multiple", "targttype1", "guncertain1", "hostkidoutcome", "INT_LOG", "INT_IDEO", "INT_MISC", "attack2", "attack5", "attack6", "attack7", "weaponType5", "weaponType6", "weaponType8", "weaponType9", "weaponType13", "season", "natltyregion")
+gtdCleanedRemoved[,names(gtdCleanedRemoved) %in% factorize] = lapply(gtdCleanedRemoved[,names(gtdCleanedRemoved) %in% factorize], factor)
 ```
