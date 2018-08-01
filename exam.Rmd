@@ -37,8 +37,8 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("isho
 gtdCleanedRemoved = gtdCleanedRemoved[!is.na(gtdCleanedRemoved$hostkidoutcome),]
 
 
-#nhostkid has 1 NA value. remove it.
-gtdCleanedRemoved = gtdCleanedRemoved[!is.na(gtdCleanedRemoved$nhostkid),]
+#nhostkid has a number of NA values coded as -99, change these to NA
+gtdCleanedRemoved$nhostkid[which(gtdCleanedRemoved$nhostkid == -99)] = NA
 
 #the 'Ransom' variable is whether or not a ransom has been demanded. In the case of missing data, we're technically unaware of a ransom being delievered. This could be treated the same as not recieveing a ransom demand in our model. set NA and -9 to 0. Once done, convert it to a factor
 gtdCleanedRemoved$ransom[is.na(gtdCleanedRemoved$ransom)] = 0
@@ -340,7 +340,6 @@ gtdCleanedRemoved$alternative[which(is.na(gtdCleanedRemoved$alternative))] = 6
 # The first two variables have a lot of unknowns, but we feel that the unknowns themselves may represent another category, so we decided to recode these two variables with an alternative missing category.
 #summary(factor(gtdCleanedRemoved$INT_MISC))
 # This variable represents whether the target was not a citizen of the country they were attacked in.  There are 9 missing variables, so we will just set these variables equal to NA
-gtdCleanedRemoved$INT_MISC[which(gtdCleanedRemoved$INT_MISC == -9)] = NA
 gtdCleanedRemoved = gtdCleanedRemoved[, !(names(gtdCleanedRemoved) %in% c("INT_ANY"))]
 
 # nReleased
@@ -382,6 +381,10 @@ gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("dive
 
 # percPaid
 gtdCleanedRemoved$percPaid = gtdCleanedRemoved$ransompaid / gtdCleanedRemoved$ransomamt
+
+# kidhijcountry
+# Removing this variable as there are some missing countries and there is too much variance in this categorical variable to be useful.
+gtdCleanedRemoved = gtdCleanedRemoved[, !(names(gtdCleanedRemoved) %in% c("kidhijcountry"))]
 ```
 
 ```{r}
@@ -390,25 +393,54 @@ gtdCleanedRemoved$percPaid = gtdCleanedRemoved$ransompaid / gtdCleanedRemoved$ra
 #Remove Russell's unused variables
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("targsubtype1", "corp1", "target1", "targtype2", "targsubtype2", "corp2", "target2", "natlty2", "targtype3", "targsubtype3", "corp3", "target3", "natlty3", "natlty3_txt", "guncertain2", "guncertain3"))]
 
+gtdCleanedRemoved$guncertain1[which(is.na(gtdCleanedRemoved$guncertain1))] = 1
 #Nationalaity Type converted from country to region. Keeping 999 for unknown nationality region
 library(sqldf)
-regions = sqldf("select distinct country, region from gtdCleanedRemoved")
+regions = sqldf("select distinct country, region from gtd")
+View(regions)
 gtdCleanedRemoved = sqldf("select a.*,
                             case
-                              when a.natlty1 = 999 then 999
-                              else b.region 
+                              when a.natlty1 = 999 then 13
+                              when a.natlty1 = 216 then 8
+                              when a.natlty1 = 233 then 8
+                              when a.natlty1 = 238 then 8
+                              when a.natlty1 = 334 then 4
+                              when a.natlty1 = 192 then 2 
+                              when a.natlty1 = 169 then 2
+                              when a.natlty1 = 422 then 13
+                              else b.region
                             end as natltyregion
                           from gtdCleanedRemoved as a
                           left join regions as b
                             on a.natlty1 = b.country")
 
 gtdCleanedRemoved = gtdCleanedRemoved[ , !(names(gtdCleanedRemoved) %in% c("natlty1"))]
+gtdCleanedRemoved$natltyregion[which(is.na(gtdCleanedRemoved$natltyregion))] = 13
 ```
 
 ```{r}
 # Ensuring variables are factorized
-sapply(gtdCleanedRemoved, class)
 gtdCleanedRemoved$iday = factor(gtdCleanedRemoved$iday, levels = (1:31), ordered = TRUE)
-factorize = c("crit1", "crit2", "crit3", "country", "region", "vicinity", "alternative", "multiple", "targttype1", "guncertain1", "hostkidoutcome", "INT_LOG", "INT_IDEO", "INT_MISC", "attack2", "attack5", "attack6", "attack7", "weaponType5", "weaponType6", "weaponType8", "weaponType9", "weaponType13", "season", "natltyregion")
+factorize = c("crit1", "crit2", "crit3", "country", "region", "vicinity", "alternative", "multiple", "targtype1", "guncertain1", "hostkidoutcome", "INT_LOG", "INT_IDEO", "INT_MISC", "attack2", "attack5", "attack6", "attack7", "weaponType5", "weaponType6", "weaponType8", "weaponType9", "weaponType13", "season", "natltyregion")
 gtdCleanedRemoved[,names(gtdCleanedRemoved) %in% factorize] = lapply(gtdCleanedRemoved[,names(gtdCleanedRemoved) %in% factorize], factor)
+
+gtdCleanedRemoved = gtdCleanedRemoved[which(gtdCleanedRemoved$hostkidoutcome != 3),]
+
+# Binning Hostage Outcome
+gtdCleanedRemoved$response = factor(ifelse(gtdCleanedRemoved$hostkidoutcome %in% c(2,5), 1, 0))
+gtdCleanedRemoved = gtdCleanedRemoved[, !(names(gtdCleanedRemoved) %in% c("hostkidoutcome"))]
+```
+
+```{r}
+# This is my own code to try account for our ransom variables
+
+#test = gtdCleanedRemoved[, !(names(gtdCleanedRemoved) %in% c("ransomamt", "ransompaid", "percPaid"))]
+test = gtdCleanedRemoved
+
+test$response = factor(ifelse(test$hostkidoutcome %in% c(2,5), 1, 0))
+test = test[, !(names(test) %in% c("hostkidoutcome"))]
+
+glm(response~ ., data = test, family = "binomial")
+
+sapply(test, summary)
 ```
